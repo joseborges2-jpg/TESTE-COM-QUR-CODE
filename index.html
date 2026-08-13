@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Quest - Desafio de Matrizes</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ef4444;
+            --text-color: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 2px solid #334155;
+        }
+
+        /* Tela de Identificação Inicial */
+        .login-screen {
+            text-align: center;
+        }
+
+        .login-screen input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: var(--accent-green);
+        }
+
+        .user-info {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .score-board {
+            background: #0f172a;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: bold;
+            color: #facc15;
+            border: 1px solid #334155;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #334155;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+            transition: width 0.3s ease;
+        }
+
+        .matrix-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            font-size: 1.2rem;
+        }
+
+        .matrix {
+            display: inline-grid;
+            padding: 5px 10px;
+            border-left: 3px solid var(--accent-blue);
+            border-right: 3px solid var(--accent-blue);
+            border-radius: 6px;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            text-align: center;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-option {
+            background-color: #334155;
+            color: var(--text-color);
+            border: 2px solid transparent;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-option:hover {
+            background-color: #475569;
+            border-color: var(--accent-blue);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.correct {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .feedback.wrong {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .resolution-box {
+            margin-top: 15px;
+            background-color: #0f172a;
+            border: 1px solid var(--accent-purple);
+            border-left: 5px solid var(--accent-purple);
+            border-radius: 10px;
+            padding: 15px;
+            display: none;
+        }
+
+        .btn-next, .btn-start {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .end-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Estilização do QR Code Final */
+        .qrcode-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .qrcode-container img {
+            width: 180px;
+            height: 180px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-card">
+    <!-- TELA 1: Identificação do Aluno -->
+    <div id="login-screen" class="login-screen">
+        <h1>📱 Matrix Quest</h1>
+        <p style="margin-top: 10px; color: #94a3b8;">Digite seu nome para iniciar o desafio:</p>
+        <input type="text" id="student-name" placeholder="Nome Completo do Aluno" />
+        <button class="btn-start" onclick="iniciarJogo()">Começar Desafio 🚀</button>
+    </div>
+
+    <!-- TELA 2: Quiz do Jogo -->
+    <div id="quiz-body" style="display: none;">
+        <div class="header">
+            <div>
+                <h1>🔢 Matrix Quest</h1>
+                <div class="user-info">Aluno: <b id="display-name" style="color:var(--accent-blue)"></b></div>
+            </div>
+            <div class="score-board">Pontos: <span id="score">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="question-title" id="question-number" style="color:#94a3b8; margin-bottom:10px;">Questão 1 de 5</div>
+        <p id="question-text" style="font-size: 1.1rem; font-weight: 600;"></p>
+        
+        <div class="matrix-display" id="matrix-container"></div>
+        <div class="options-grid" id="options-container"></div>
+        <div class="feedback" id="feedback"></div>
+
+        <div class="resolution-box" id="resolution-box">
+            <h4 style="color:var(--accent-purple); margin-bottom:8px;">💡 Resolução Passo a Passo:</h4>
+            <p id="resolution-text" style="font-size:0.95rem; line-height:1.4; color:#cbd5e1;"></p>
+        </div>
+
+        <button class="btn-next" id="btn-next" style="display:none;" onclick="proximaQuestao()">Próxima Questão ➔</button>
+    </div>
+
+    <!-- TELA 3: Resultado e QR Code -->
+    <div id="end-screen" class="end-screen" style="display: none;">
+        <h2 style="color: var(--accent-green);">Desafio Concluído!</h2>
+        <p style="font-size: 1.2rem; margin-top: 10px;">Parabéns, <b id="final-name" style="color:var(--accent-blue);"></b>!</p>
+        <p style="font-size: 1.1rem; margin-bottom: 15px;">Pontuação final: <b id="final-score" style="color: #facc15;">0</b> de 50 pontos.</p>
+
+        <!-- Container do QR Code Dinâmico -->
+        <div class="qrcode-container">
+            <img id="qrcode-img" src="" alt="QR Code do Resultado" />
+        </div>
+        <p style="font-size: 0.85rem; color: #94a3b8;">Escaneie o QR Code acima para validar o comprovante no celular!</p>
+
+        <button class="btn-start" onclick="reiniciarJogo()">Jogar Novamente 🔄</button>
+    </div>
+</div>
+
+<script>
+    let nomeAluno = "";
+    let questaoAtual = 0;
+    let pontuacao = 0;
+
+    const questaoList = [
+        {
+            num: 1,
+            texto: "Dada a matriz A, qual é o valor do elemento a₂₁ (segunda linha, primeira coluna)?",
+            renderMatrix: () => `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>3</div><div>7</div><div style="color:#10b981; font-weight:bold;">-2</div><div>5</div></div>`,
+            opcoes: ["3", "-2", "7", "5"],
+            correta: 1,
+            resolucao: "O elemento <b>a₂₁</b> representa o número na <b>linha 2, coluna 1</b>. Na matriz dada, esse número é <b>-2</b>."
+        },
+        {
+            num: 2,
+            texto: "Dada a matriz B, qual é a sua Matriz Transposta (Bᵗ)?",
+            renderMatrix: () => `<span style="font-weight:bold;">B = </span><div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>1</div><div>4</div><div>2</div><div>5</div></div>`,
+            opcoes: [
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>1</div><div>2</div><div>4</div><div>5</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>5</div><div>4</div><div>2</div><div>1</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>4</div><div>1</div><div>5</div><div>2</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>-1</div><div>-4</div><div>-2</div><div>-5</div></div>`
+            ],
+            correta: 0,
+            resolucao: "Na <b>Transposta (Bᵗ)</b>, as linhas viram colunas. A linha 1 (1, 4) passa a ser a coluna 1."
+        },
+        {
+            num: 3,
+            texto: "Calcule a soma das matrizes C + D:",
+            renderMatrix: () => `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>2</div><div>1</div><div>0</div><div>3</div></div><span>+</span><div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>1</div><div>4</div><div>5</div><div>2</div></div>`,
+            opcoes: [
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>3</div><div>5</div><div>5</div><div>5</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>2</div><div>4</div><div>0</div><div>6</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>3</div><div>4</div><div>5</div><div>6</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>1</div><div>3</div><div>5</div><div>1</div></div>`
+            ],
+            correta: 0,
+            resolucao: "Somam-se os termos correspondentes: 2+1=<b>3</b>, 1+4=<b>5</b>, 0+5=<b>5</b>, 3+2=<b>5</b>."
+        },
+        {
+            num: 4,
+            texto: "Qual o resultado da multiplicação escalar 3 · M?",
+            renderMatrix: () => `<span style="font-weight:bold;">3 · </span><div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>2</div><div>-1</div><div>4</div><div>0</div></div>`,
+            opcoes: [
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>6</div><div>-3</div><div>12</div><div>0</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>5</div><div>2</div><div>7</div><div>3</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>6</div><div>-1</div><div>12</div><div>0</div></div>`,
+                `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>2</div><div>-3</div><div>4</div><div>0</div></div>`
+            ],
+            correta: 0,
+            resolucao: "Multiplica-se 3 por cada elemento: 3·2=<b>6</b>, 3·(-1)=<b>-3</b>, 3·4=<b>12</b>, 3·0=<b>0</b>."
+        },
+        {
+            num: 5,
+            texto: "Qual o Determinante da matriz 2x2 abaixo?",
+            renderMatrix: () => `<div class="matrix" style="grid-template-columns: repeat(2, 1fr);"><div>4</div><div>2</div><div>1</div><div>5</div></div>`,
+            opcoes: ["18", "22", "14", "20"],
+            correta: 0,
+            resolucao: "det = (Diag. Principal) - (Diag. Secundária) = (4·5) - (2·1) = 20 - 2 = <b>18</b>."
+        }
+    ];
+
+    function iniciarJogo() {
+        const input = document.getElementById('student-name');
+        if (input.value.trim() === "") {
+            alert("Por favor, digite seu nome!");
+            return;
+        }
+        nomeAluno = input.value.trim();
+        document.getElementById('display-name').innerText = nomeAluno;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('quiz-body').style.display = 'block';
+        carregarQuestao();
+    }
+
+    function carregarQuestao() {
+        const q = questaoList[questaoAtual];
+        document.getElementById('question-number').innerText = `Questão ${q.num} de ${questaoList.length}`;
+        document.getElementById('progress').style.width = `${(q.num / questaoList.length) * 100}%`;
+        document.getElementById('question-text').innerText = q.texto;
+        document.getElementById('matrix-container').innerHTML = q.renderMatrix();
+
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('resolution-box').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'none';
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        q.opcoes.forEach((opcao, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerHTML = opcao;
+            btn.onclick = () => verificarResposta(index);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function verificarResposta(indiceSelecionado) {
+        const q = questaoList[questaoAtual];
+        const feedback = document.getElementById('feedback');
+        const resBox = document.getElementById('resolution-box');
+        const botoes = document.querySelectorAll('.btn-option');
+
+        botoes.forEach(b => b.style.pointerEvents = 'none');
+
+        if (indiceSelecionado === q.correta) {
+            pontuacao += 10;
+            document.getElementById('score').innerText = pontuacao;
+            feedback.className = "feedback correct";
+            feedback.innerText = "✓ Correto!";
+        } else {
+            feedback.className = "feedback wrong";
+            feedback.innerText = "✗ Incorreto!";
+        }
+
+        feedback.style.display = 'block';
+        document.getElementById('resolution-text').innerHTML = q.resolucao;
+        resBox.style.display = 'block';
+        document.getElementById('btn-next').style.display = 'block';
+    }
+
+    function proximaQuestao() {
+        questaoAtual++;
+        if (questaoAtual < questaoList.length) {
+            carregarQuestao();
+        } else {
+            finalizarJogo();
+        }
+    }
+
+    function finalizarJogo() {
+        document.getElementById('quiz-body').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'block';
+        document.getElementById('final-name').innerText = nomeAluno;
+        document.getElementById('final-score').innerText = pontuacao;
+
+        // Geração Dinâmica do QR Code via API do Google Charts
+        const URL_ATUAL = window.location.href; 
+        const conteudoQRCode = `Comprovante: ${nomeAluno} | Pontos: ${pontuacao}/50 | Jogo: ${URL_ATUAL}`;
+        const googleApiUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(conteudoQRCode)}`;
+        
+        document.getElementById('qrcode-img').src = googleApiUrl;
+    }
+
+    function reiniciarJogo() {
+        questaoAtual = 0;
+        pontuacao = 0;
+        document.getElementById('score').innerText = 0;
+        document.getElementById('quiz-body').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'block';
+    }
+</script>
+</body>
+</html>
